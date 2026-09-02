@@ -18,20 +18,30 @@ The engine is everything in this public repository:
 - **MCP tool source** (`tools_mcp/`) — source for the `recon`, `webapp`, and
   `blockchain` tool registries and their scope guard, plus a doctor that reports
   what is missing on the local machine.
+- **Git harness** (`.githooks/`, `scripts/engagement_guard.py`,
+  `scripts/resume_engagement.py`) — hooks and a branch guard that keep secrets
+  and per-engagement data off shared branches and check workspace hygiene.
+- **Dashboard** (`dashboard/generate.py`) — regenerates a read-only HTML view of
+  engagement and CTF progress from live git state, without checking out a branch.
+- **Starter playbook** (`roles/`) — a generic, fill-me-in `SKILL.md` per role,
+  wired to `.claude/skills/` by the initializer. Replace each body with your own
+  instructions; the shipped stubs contain no tradecraft.
 - **Documentation** (`docs/`) — the operating model, roles, branch model,
   safety boundaries, and setup.
 
 The engine is deliberately neutral. It ships no targets, no credentials, no
-evidence, and no operating instructions. It is safe to clone and share as-is.
+evidence, and only generic fill-me-in role stubs — never anyone's real operating
+instructions. It is safe to clone and share as-is.
 
 ## The playbook (yours, kept private)
 
 The playbook is the set of **role skills** that tell an agent how to behave in
 each role — how your mastermind prioritizes, what your reconnaissance covers,
-how your reviewer challenges a claim before it is promoted. These live untracked
-in `.claude/skills/` and are read by Claude Code as skills and by Codex CLI
-through the `.agents/skills` symlink. They encode judgement and method, so they
-stay with you and out of any public remote.
+how your reviewer challenges a claim before it is promoted. You create it by
+filling in the generic `roles/` stubs the engine ships; the initializer points
+`.claude/skills/` at `roles/` so Claude Code reads them as skills and Codex CLI
+finds them through the `.agents/skills` symlink. They encode judgement and
+method, so your filled-in versions stay with you and out of any public remote.
 
 [Skills](SKILLS.md) lists the role names the engine expects and shows the file
 format. The names and one-line purposes are public; the instructions behind them
@@ -42,7 +52,7 @@ are not.
 ```text
 engine (this repo)                     playbook (your private setup)
 ------------------                     -----------------------------
-templates/  scripts/  tools_mcp/       .claude/skills/<role>/SKILL.md
+templates/ scripts/ tools_mcp/ roles/  roles/<role>/SKILL.md (you fill in)
         |                                        |
         |   invoked as a role  <----------------- .agents/skills (Codex symlink)
         v
@@ -59,11 +69,12 @@ harness and tools. The role decides; the harness records and checks.
 ## Connecting your own playbook
 
 1. Clone this repository and enable the hooks (see [Setup](SETUP.md)).
-2. Run `python3 scripts/harness/init_workspace.py --root .` to create the
-   `.claude/skills/` layout, the Codex `.agents/skills` symlink, and an empty
-   stub for each role. It never overwrites files that already exist.
-3. Edit each `SKILL.md` to encode your own instructions. Keep planning,
-   hands-on work, and review as distinct roles with explicit stop conditions.
+2. Run `python3 scripts/harness/init_workspace.py --root .` to wire the shipped
+   `roles/` playbook to `.claude/skills/`, create the Codex `.agents/skills`
+   symlink, and enable the hooks. It never overwrites files that already exist.
+3. Edit each `roles/<role>/SKILL.md` to encode your own instructions. Keep
+   planning, hands-on work, and review as distinct roles with explicit stop
+   conditions.
 4. Version the filled-in skills with your private operating setup — never in a
    public remote.
 

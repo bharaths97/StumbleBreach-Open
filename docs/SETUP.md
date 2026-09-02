@@ -9,11 +9,11 @@ preinstalled scanning tools.
 
 1. Clone or copy this repository into a directory you control.
 2. Enable the versioned git hooks: `git config core.hooksPath .githooks`
-3. Bootstrap the playbook skeleton (create-only, never overwrites):
-   `python3 scripts/harness/init_workspace.py --root .` — this lays down the
-   `.claude/skills/` role stubs and the Codex `.agents/skills` symlink for you
-   to fill in. See [Skills](SKILLS.md) and
-   [Engine and playbook](ENGINE-AND-PLAYBOOK.md).
+3. Bootstrap the playbook wiring (create-only, never overwrites):
+   `python3 scripts/harness/init_workspace.py --root .` — this points
+   `.claude/skills/` at the shipped generic `roles/` playbook and creates the
+   Codex `.agents/skills` symlink for you to fill in. See [Skills](SKILLS.md)
+   and [Engine and playbook](ENGINE-AND-PLAYBOOK.md).
 4. Read the root project rules and the public documentation.
 5. Choose an appropriate template and create a private working branch.
    For bug-bounty engagements, optionally create a company branch first

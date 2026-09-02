@@ -29,7 +29,8 @@ provide the details needed for a particular authorized workspace.
   the private role instructions that drive it, and how the two connect.
 - [Architecture](ARCHITECTURE.md) — how templates, roles, tools, and the
   coverage harness fit together.
-- [Harness](HARNESS.md) — the deterministic coverage and reporting scripts.
+- [Harness](HARNESS.md) — the deterministic coverage and reporting scripts, plus
+  the git hooks and `dashboard/generate.py` progress view.
 - [Roles](ROLES.md) — the planning, worker, and review separation.
 - [Skills](SKILLS.md) — the role roster, skill file format, and stub generator.
 - [Branching](BRANCHING.md) — a safe private-engagement branch model.

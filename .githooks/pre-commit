@@ -1,0 +1,4 @@
+#!/bin/sh
+# Versioned hook. Activate once per clone with:
+#   git config core.hooksPath .githooks
+exec python3 scripts/engagement_guard.py pre-commit

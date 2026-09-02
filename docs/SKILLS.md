@@ -1,12 +1,15 @@
 # Skills (the playbook layer)
 
 StumbleBreach ships the **engine** — templates, harness scripts, MCP tool
-source, and documentation. It does **not** ship a playbook. The playbook is the
-set of *role skills* that tell an agent how to plan, hunt, and review on your
-terms. Those live untracked in `.claude/skills/` (Claude Code) and are
-discovered by Codex CLI through the `.agents/skills` symlink. Keeping them out
-of the repository is deliberate: your operating instructions are yours, and the
-engine stays neutral and shareable without them.
+source, and documentation — plus a **generic starter playbook** under `roles/`:
+one fill-me-in `SKILL.md` per role. It does **not** ship a real playbook. Your
+real playbook is what you get by replacing each stub body with your own
+instructions for how an agent plans, hunts, and reviews on your terms.
+`init_workspace.py` wires `roles/` to `.claude/skills/` (Claude Code) and to
+Codex CLI through the `.agents/skills` symlink, so editing `roles/<role>/SKILL.md`
+is the single place you fill in. Keep those filled-in files private — out of any
+public remote. The engine stays neutral and shareable; the tradecraft you add
+does not.
 
 See [Engine and playbook](ENGINE-AND-PLAYBOOK.md) for why the split exists and
 how the two layers connect.
@@ -40,9 +43,10 @@ The `_shared/` directory holds baseline instructions common to several roles
 
 ## Skill file format
 
-Each role is a directory under `.claude/skills/<role>/` containing a `SKILL.md`
-with YAML frontmatter and a short body. The stub below shows the shape the
-engine expects — fill the body with your own operating instructions:
+Each role is a directory under `roles/<role>/` (surfaced at
+`.claude/skills/<role>/` by the initializer) containing a `SKILL.md` with YAML
+frontmatter and a short body. The stub below shows the shape the engine expects
+— fill the body with your own operating instructions:
 
 ```markdown
 ---
@@ -59,16 +63,17 @@ already have, and do not let one session choose scope, run hands-on work, and
 approve its own result.
 ```
 
-## Generating stubs
+## Wiring the roles
 
-Run the initializer to create the directory layout, the Codex `.agents/skills`
-symlink, and an empty stub for every role above, without overwriting anything
-that already exists:
+The repository already ships a generic `roles/` folder. Run the initializer to
+wire it to `.claude/skills/`, create the Codex `.agents/skills` symlink, and
+enable the git hooks — without overwriting anything that already exists:
 
 ```sh
 python3 scripts/harness/init_workspace.py --root .
 ```
 
-Then edit each `SKILL.md` to encode your playbook. Version those files with your
-private operating setup, never in a public remote. This repository documents the
-model and the reusable engine; the instructions behind each role remain yours.
+Then edit each `roles/<role>/SKILL.md` to encode your playbook. Version those
+filled-in files with your private operating setup, never in a public remote.
+This repository ships the reusable engine and generic stubs; the instructions
+you write behind each role remain yours.

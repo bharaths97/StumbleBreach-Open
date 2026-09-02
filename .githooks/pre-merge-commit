@@ -1,0 +1,3 @@
+#!/bin/sh
+# Keep merge-commit protection on the same path policy as pre-commit.
+exec python3 scripts/engagement_guard.py pre-commit

@@ -127,23 +127,31 @@ def main(argv: list[str] | None = None) -> int:
         parser.error(f"{root} does not look like a StumbleBreach checkout")
 
     skills_dir = root / ".claude" / "skills"
+    roles_dir = root / "roles"
     created: list[Path] = []
     skipped: list[Path] = []
     notes: list[str] = []
 
-    write_if_absent(
-        skills_dir / "_shared" / SHARED_BASELINE_NAME,
-        SHARED_BASELINE_STUB,
-        created,
-        skipped,
-    )
-    for name, description in ROLES:
+    if roles_dir.is_dir():
+        # The published repo ships a generic `roles/` playbook. Point
+        # .claude/skills at it (the same layout a private checkout uses) so
+        # editing roles/<role>/SKILL.md is the one place you fill in.
+        ensure_symlink(skills_dir, "../roles", notes)
+    else:
+        # No roles/ folder (e.g. a stripped checkout): lay down stubs directly.
         write_if_absent(
-            skills_dir / name / "SKILL.md",
-            skill_stub(name, description),
+            skills_dir / "_shared" / SHARED_BASELINE_NAME,
+            SHARED_BASELINE_STUB,
             created,
             skipped,
         )
+        for name, description in ROLES:
+            write_if_absent(
+                skills_dir / name / "SKILL.md",
+                skill_stub(name, description),
+                created,
+                skipped,
+            )
 
     # Codex CLI discovers the same skills through this symlink.
     ensure_symlink(root / ".agents" / "skills", "../.claude/skills", notes)
@@ -159,7 +167,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  - {note}")
 
     print("\nNext steps:")
-    print("  1. Edit each .claude/skills/<role>/SKILL.md with your own playbook.")
+    print("  1. Edit each roles/<role>/SKILL.md (= .claude/skills/<role>/SKILL.md) with your own playbook.")
     print("     See docs/SKILLS.md and docs/ENGINE-AND-PLAYBOOK.md.")
     print("  2. Claude Code: start from this root and invoke a role, e.g. /pentest-planner.")
     print("  3. Codex CLI: start from this root; it discovers roles via .agents/skills.")

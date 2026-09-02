@@ -21,9 +21,11 @@ git config core.hooksPath .githooks
 python3 scripts/harness/init_workspace.py --root .
 ```
 
-The initializer lays down the `.claude/skills/` role stubs, the Codex
-`.agents/skills` symlink, and the git hooks, without overwriting anything. Then
-fill in each `SKILL.md` with your own playbook and read the docs below.
+The initializer wires the generic `roles/` playbook to `.claude/skills/` (and
+Codex's `.agents/skills`) and enables the git hooks, without overwriting
+anything. Then replace each `roles/<role>/SKILL.md` body with your own playbook
+and read the docs below. Regenerate the engagement dashboard any time with
+`python3 dashboard/generate.py > dashboard/index.html`.
 
 ## Start here
 
