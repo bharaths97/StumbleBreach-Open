@@ -1,0 +1,64 @@
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+
+# .claude/ and .codex/ are never part of an engagement — the single
+# config lives untracked at the StumbleBreach project root and governs
+# every branch. This ignore exists so a stray local copy never gets
+# accidentally committed onto an engagement branch.
+.claude/
+.codex/
+
+# Local tool cache/state (add your own editor/tool cache dirs here or,
+# better, to your global gitignore so they never reach any project).
+
+# Real target details — never commit
+config/target.env
+
+# Ad hoc scratch notes (account credentials, API keys, anything the
+# human jots down outside the established config/target.env
+# convention) — same never-commit rule.
+/Notes/
+
+# Raw evidence — bulk logs/captures, scratch space, not the deliverable.
+# Curated evidence for a specific finding lives in
+# findings/evidence/<finding-slug>/ instead, which IS tracked.
+logs/agent-scan-logs/*
+logs/network-captures/*
+!logs/agent-scan-logs/.gitkeep
+!logs/network-captures/.gitkeep
+
+# Reference repos are large, reproducible local aids. Keep the tracked
+# orientation note while ignoring every locally-cloned or symlinked source.
+/references/*
+!/references/README.md
+
+# Generated harness orientation report. Regenerate with harness/scripts/report.py.
+harness/report.md
+
+# MCP tool virtualenv is local machine state, never tracked, same
+# convention as any .venv/ — must survive `git checkout` across branches.
+tools-env/
+
+# tools_mcp/ *source* (registries, hub_guard/enforce.py, doctor.py — the
+# actual guardrail/enforcement logic) IS tracked: this is project code,
+# not local state. Only its generated/runtime output stays ignored:
+tools_mcp/doctor-report.json
+tools_mcp/.update-timestamps.json
+tools_mcp/MANIFEST.md
+# Third-party methodology sources are local reference caches, not
+# tracked engagement content.
+tools_mcp/skills/vendor/
+__pycache__/
+*.pyc
+
+.mcp.json
+
+# Local engagement dashboard: tracked-source / untracked-output split as
+# with tools_mcp/ above. The generator is project code; its rendered
+# output is regenerated, not engagement content, so it stays ignored.
+dashboard/index.html

@@ -1,0 +1,4 @@
+# Activity log — <ISO8601 timestamp> [<actor>/<role>] <action>
+# actor: user | claude | codex   role: overseer | worker
+# See RULES.md #11. Append one line per tool run or user-confirmed action,
+# whether the session ran it or the user did.

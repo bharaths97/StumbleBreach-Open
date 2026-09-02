@@ -1,0 +1,26 @@
+# Local operating state; never part of the public documentation snapshot.
+.DS_Store
+.vscode/
+.idea/
+.claude/
+.codex/
+.agents/
+.mcp.json
+tools-env/
+__pycache__/
+*.pyc
+
+# Private hub and engagement working data that can remain in the shared checkout.
+config/
+findings/
+logs/
+references/
+challenges/
+planning/
+scope.md
+STATUS.md
+target.env
+*.env
+*.pem
+*.key
+*.p12

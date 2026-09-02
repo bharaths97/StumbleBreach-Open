@@ -1,0 +1,32 @@
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+
+# Secrets / env — never commit these
+.env
+*.pem
+*.key
+*.p12
+
+# .claude/ and .codex/ are never part of an engagement — the single
+# config lives untracked at the StumbleBreach project root and governs
+# every branch. This ignore exists so a stray local copy never gets
+# accidentally committed onto an engagement branch.
+.claude/
+.codex/
+
+# Local tool cache/state (add your own editor/tool cache dirs here or,
+# better, to your global gitignore so they never reach any project).
+
+# Raw tool output / scan scratch space — ephemeral, not the deliverable.
+# The curated write-up + evidence for submission lives in
+# challenges/*/report/ instead, which IS tracked.
+challenges/*/results/
+
+# Cloned vendor skill repos, if used — large, third-party, reproducible.
+# skill-library/INDEX.md and README.md stay tracked.
+/skill-library/vendor/
