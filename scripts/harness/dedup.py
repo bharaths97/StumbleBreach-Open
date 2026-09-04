@@ -10,24 +10,10 @@ import sys
 from collections import Counter
 from pathlib import Path
 
+from validate_schema import front_matter
+
 MATCH_FIELDS = ("endpoint", "function", "contract_address", "attack_class")
 STOP_WORDS = {"and", "for", "from", "the", "with", "that", "this", "into", "via"}
-
-
-def front_matter(path: Path) -> dict[str, str]:
-    lines = path.read_text().splitlines()
-    if not lines or lines[0].strip() != "---":
-        return {}
-    try:
-        end = lines.index("---", 1)
-    except ValueError:
-        return {}
-    fields = {}
-    for line in lines[1:end]:
-        if ":" in line:
-            key, value = line.split(":", 1)
-            fields[key.strip()] = value.strip().strip("'\"")
-    return fields
 
 
 def title(path: Path) -> str:
@@ -59,7 +45,7 @@ def main() -> int:
 
     if not args.candidate.exists():
         parser.error(f"candidate does not exist: {args.candidate}")
-    candidate = front_matter(args.candidate)
+    candidate = front_matter(args.candidate, strict=False)
     if not candidate:
         print("candidate has no readable front matter", file=sys.stderr)
         return 1
@@ -74,7 +60,7 @@ def main() -> int:
     candidates = []
 
     for path in existing:
-        fields = front_matter(path)
+        fields = front_matter(path, strict=False)
         matched = [
             field
             for field in MATCH_FIELDS

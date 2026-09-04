@@ -32,6 +32,15 @@ To bring a company profile to main, cherry-pick the specific `profiles/` commit.
 Never run `git merge <company-branch>` into main -- that pulls engagement data
 onto the framework branch.
 
+## Hub architecture branches
+
+Bulk framework changes use a tracked development branch named
+`feat-<two-or-three-words>` or `patch-<two-or-three-words>`, such as
+`feat-backpatch-compatibility`. Review and merge that branch into `main`
+before backpatching engagement branches. The engagement guard recognizes this
+name pattern and still warns about framework edits on ordinary engagement
+branches.
+
 ## Engagement branch guard
 
 A versioned `.githooks/pre-commit` hook blocks engagement-data paths on `main`.

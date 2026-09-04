@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 import sys
 from pathlib import Path, PurePosixPath
@@ -20,6 +21,7 @@ ARCHITECTURE_EXAMPLES = (
     "harness/", "scripts/",
 )
 FRAMEWORK_PATHS = ("roles/", "templates/", "scripts/")
+HUB_WORK_BRANCH_RE = re.compile(r"^(?:feat|patch)-[a-z0-9]+(?:-[a-z0-9]+){1,2}$")
 SECRET_SUFFIXES = (".env", ".pem", ".key", ".p12")
 LOCAL_STATE_ROOTS = {
     ".agents/", ".claude/", ".codex/", ".mcp.json", ".vscode/",
@@ -39,6 +41,11 @@ def git(*args: str) -> str:
 
 def branch() -> str:
     return git("branch", "--show-current").strip()
+
+
+def is_hub_work_branch(name: str) -> bool:
+    """Return whether name follows the tracked hub-work branch convention."""
+    return bool(HUB_WORK_BRANCH_RE.fullmatch(name))
 
 
 def is_engagement_path(path: str) -> bool:
@@ -123,7 +130,7 @@ def precommit() -> int:
             print(f"  - {path}", file=sys.stderr)
         return 1
     current = branch()
-    if current != "main":
+    if current != "main" and not is_hub_work_branch(current):
         framework = [
             path for path in staged
             if any(PurePosixPath(path).as_posix().startswith(fw) for fw in FRAMEWORK_PATHS)

@@ -10,25 +10,11 @@ from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
 
-
-def front_matter(path: Path) -> dict[str, str]:
-    lines = path.read_text().splitlines()
-    if not lines or lines[0].strip() != "---":
-        return {}
-    try:
-        end = lines.index("---", 1)
-    except ValueError:
-        return {}
-    result = {}
-    for line in lines[1:end]:
-        if ":" in line:
-            key, value = line.split(":", 1)
-            result[key.strip()] = value.strip().strip("'\"")
-    return result
+from validate_schema import front_matter
 
 
 def finding_status(path: Path) -> str:
-    fields = front_matter(path)
+    fields = front_matter(path, strict=False)
     if fields.get("status"):
         return fields["status"]
     for line in path.read_text().splitlines():
@@ -70,7 +56,10 @@ def main() -> int:
         path for path in sorted(args.findings_dir.glob("*.md"))
         if path.name not in finding_exclusions
     ] if args.findings_dir.exists() else []
-    severity_counts = Counter(front_matter(path).get("severity", "unspecified") for path in findings)
+    severity_counts = Counter(
+        front_matter(path, strict=False).get("severity", "unspecified")
+        for path in findings
+    )
     finding_statuses = Counter(finding_status(path) for path in findings)
     open_queue = [row for row in queue_rows(args.queue) if row[3].lower() not in {"rejected", "done"}]
 

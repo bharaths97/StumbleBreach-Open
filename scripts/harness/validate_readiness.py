@@ -15,7 +15,6 @@ from validate_schema import BASE_FIELDS, DOMAIN_FIELDS, front_matter, is_placeho
 
 PROMOTION_STATUSES = {"confirmed", "submitted"}
 COMPLETE_CELL_STATUSES = {"validated", "reported"}
-COMPLETE_QUEUE_STATUSES = {"selected", "done"}
 REQUIRED_SECTIONS = ("Summary", "Reproduction steps", "Impact")
 REQUIRED_SIGNOFFS = (
     "In scope per scope.md",

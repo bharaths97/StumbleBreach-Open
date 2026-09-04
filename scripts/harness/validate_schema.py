@@ -16,21 +16,27 @@ DOMAIN_FIELDS = {
 }
 
 
-def front_matter(path: Path) -> dict[str, str]:
+def front_matter(path: Path, *, strict: bool = True) -> dict[str, str]:
     lines = path.read_text().splitlines()
     if not lines or lines[0].strip() != "---":
-        raise ValueError("missing opening YAML front-matter delimiter")
+        if strict:
+            raise ValueError("missing opening YAML front-matter delimiter")
+        return {}
     try:
         end = lines.index("---", 1)
     except ValueError as exc:
-        raise ValueError("missing closing YAML front-matter delimiter") from exc
+        if strict:
+            raise ValueError("missing closing YAML front-matter delimiter") from exc
+        return {}
 
     fields = {}
     for line in lines[1:end]:
         if not line.strip() or line.lstrip().startswith("#"):
             continue
         if ":" not in line:
-            raise ValueError(f"invalid front-matter line: {line!r}")
+            if strict:
+                raise ValueError(f"invalid front-matter line: {line!r}")
+            return {}
         key, value = line.split(":", 1)
         fields[key.strip()] = value.strip().strip("'\"")
     return fields
