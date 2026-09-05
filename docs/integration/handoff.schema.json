@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stumblebreach.local/integration/handoff.schema.json",
+  "title": "StumbleBreach manual handoff envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "handoff_id",
+    "engagement",
+    "branch",
+    "from_role",
+    "to_role",
+    "context",
+    "completed_work",
+    "evidence_refs",
+    "open_questions",
+    "requested_decision",
+    "recommended_next_action",
+    "created_at",
+    "status"
+  ],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "handoff_id": { "type": "string", "minLength": 1 },
+    "engagement": { "type": "string", "minLength": 1 },
+    "branch": { "type": "string", "minLength": 1 },
+    "from_role": { "type": "string", "minLength": 1 },
+    "to_role": { "type": "string", "minLength": 1 },
+    "parent_handoff_id": { "type": "string", "minLength": 1 },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "source_refs", "confidence", "review_state"],
+      "properties": {
+        "kind": { "enum": ["recorded", "derived", "unresolved"] },
+        "source_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "confidence": { "enum": ["high", "medium", "low"] },
+        "review_state": { "enum": ["accepted", "candidate", "needs-review", "rejected"] }
+      }
+    },
+    "parent_task": { "type": "string", "minLength": 1 },
+    "coverage_cell": { "type": "string", "minLength": 1 },
+    "context": { "type": "string", "minLength": 1 },
+    "completed_work": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "description"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "requested_decision": { "type": "string" },
+    "recommended_next_action": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "status": {
+      "enum": [
+        "pending",
+        "accepted",
+        "returned",
+        "closed",
+        "interrupted",
+        "stale",
+        "incomplete",
+        "rejected",
+        "resumed"
+      ]
+    }
+  },
+  "anyOf": [
+    { "required": ["parent_task"] },
+    { "required": ["coverage_cell"] }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "track": "harness",
+  "phase_branch": "feat-phase-harness",
+  "framework_paths": {
+    "added": [
+      "scripts/harness/validate_recon_manifest.py",
+      "scripts/upstream_check.py",
+      "scripts/validate_handoff.py",
+      "templates/bugbounty/harness/evidence-guidance.md",
+      "templates/bugbounty/harness/playbooks/README.md",
+      "templates/bugbounty/harness/playbooks/binary.md",
+      "templates/bugbounty/harness/playbooks/blockchain.md",
+      "templates/bugbounty/harness/playbooks/web.md",
+      "templates/bugbounty/harness/recon-manifest.example.json",
+      "templates/bugbounty/harness/recon-manifest.schema.json"
+    ],
+    "removed": [],
+    "renamed_or_moved": [],
+    "modified": [
+      "scripts/export_public_docs.py",
+      "scripts/resume_engagement.py"
+    ]
+  },
+  "schema_changes": [
+    {
+      "path": "config/upstream-sources.json",
+      "change": "Added schema_version 1 registry records with pinned source identity, license, allowed paths, capability areas, destination, owner, review date, and update policy."
+    },
+    {
+      "path": "docs/integration/handoff.schema.json",
+      "change": "Added versioned manual handoff envelope fields, evidence references, lifecycle status, and parent_task-or-coverage_cell routing requirement."
+    },
+    {
+      "path": "templates/bugbounty/harness/recon-manifest.schema.json",
+      "change": "Added optional bug-bounty recon manifest fields for ownership anchors, live status, ranked surfaces, and redacted secret references."
+    }
+  ],
+  "role_discovery_changes": [],
+  "configuration_dependency_changes": [
+    {
+      "path": "config/upstream-sources.json",
+      "consumer": "scripts/upstream_check.py",
+      "required": false,
+      "note": "The read-only upstream checker uses this registry by default; no existing engagement runtime or queue requires it."
+    }
+  ],
+  "generated_machine_local_state": {
+    "introduced": false,
+    "paths": [],
+    "regeneration": "none"
+  },
+  "public_export_impact": {
+    "status": "changed",
+    "paths": [
+      "scripts/export_public_docs.py",
+      "docs/integration/HANDOFF_CONTRACT.md",
+      "docs/integration/backpatch-compatibility.json",
+      "docs/integration/edge-case-matrix.json",
+      "docs/integration/fixtures/handoffs.json",
+      "docs/integration/handoff.schema.json",
+      "docs/integration/hunting-playbook.md",
+      "scripts/harness/validate_recon_manifest.py",
+      "templates/bugbounty/harness/evidence-guidance.md",
+      "templates/bugbounty/harness/recon-manifest.example.json",
+      "templates/bugbounty/harness/recon-manifest.schema.json",
+      "docs/integration/external-provenance.json",
+      "templates/bugbounty/harness/playbooks/"
+    ],
+    "exported_paths": [
+      "docs/integration/HANDOFF_CONTRACT.md",
+      "docs/integration/backpatch-compatibility.json",
+      "docs/integration/edge-case-matrix.json",
+      "docs/integration/fixtures/handoffs.json",
+      "docs/integration/handoff.schema.json",
+      "docs/integration/hunting-playbook.md",
+      "scripts/harness/validate_recon_manifest.py",
+      "templates/bugbounty/harness/evidence-guidance.md",
+      "templates/bugbounty/harness/recon-manifest.example.json",
+      "templates/bugbounty/harness/recon-manifest.schema.json"
+    ],
+    "excluded_paths": [
+      "docs/integration/external-provenance.json",
+      "templates/bugbounty/harness/playbooks/"
+    ],
+    "check": "Run export dry-run and public leak/allowlist checks; private provenance and hunting playbooks remain excluded."
+  },
+  "bug_bounty_impact": {
+    "status": "changed",
+    "paths": [
+      "templates/bugbounty/harness/evidence-guidance.md",
+      "templates/bugbounty/harness/playbooks/",
+      "templates/bugbounty/harness/recon-manifest.example.json",
+      "templates/bugbounty/harness/recon-manifest.schema.json",
+      "scripts/harness/validate_recon_manifest.py"
+    ],
+    "check": "Optional recon-manifest validation and reviewed playbook guidance add bug-bounty support without changing scope, queue, findings, or evidence authority."
+  },
+  "ctf_impact": {
+    "status": "preserved",
+    "check": "Synthetic CTF structure remains separate and untouched; no CTF schema or template path changed."
+  },
+  "expected_behavior": {
+    "old": "A compatible older engagement branch may be dry-run and backpatched with framework paths only; engagement data remains manual.",
+    "current": "A branch already matching main is an idempotent no-op after the compatibility report.",
+    "beta": "A beta-version branch is not promoted by this helper; operator reviews the report and release gates first."
+  },
+  "risks": [
+    {
+      "risk": "A dirty worktree or an unclassified merge conflict could overwrite engagement state.",
+      "mitigation": "The helper stops before switching dirty worktrees and leaves engagement or unclassified conflicts for manual resolution.",
+      "decision": "accepted with operator-controlled manual resolution"
+    }
+  ]
+}

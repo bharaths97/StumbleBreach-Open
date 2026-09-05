@@ -1,0 +1,148 @@
+[
+  {
+    "schema_version": "1",
+    "handoff_id": "bb-main-001",
+    "engagement": "synthetic-bugbounty",
+    "branch": "synthetic-bugbounty",
+    "from_role": "bb-mastermind",
+    "to_role": "bb-vigilante-shit",
+    "provenance": {"kind": "recorded", "source_refs": ["scope.md", "harness/queue.md"], "confidence": "high", "review_state": "accepted"},
+    "parent_task": "API session review",
+    "coverage_cell": "api / auth-bypass",
+    "context": "Synthetic API scope is ready for one selected queue cell.",
+    "completed_work": ["Scope and queue references were reviewed."],
+    "evidence_refs": [
+      { "path": "scope.md", "description": "Synthetic authorization record" },
+      { "path": "harness/queue.md", "description": "Human-selected queue cell" },
+      { "path": "logs/activity.log", "description": "Role activity audit" }
+    ],
+    "open_questions": ["Does the operator approve the prepared handoff?"],
+    "requested_decision": "Approve or return this handoff.",
+    "recommended_next_action": "Review the references and make the operator decision.",
+    "created_at": "2026-09-04T12:00:00Z",
+    "status": "pending"
+  },
+  {
+    "schema_version": "1",
+    "handoff_id": "ctf-main-001",
+    "engagement": "synthetic-ctf",
+    "branch": "synthetic-ctf/challenge-web-01",
+    "from_role": "ctf-mastermind",
+    "to_role": "ctf-vigilante-shit",
+    "provenance": {"kind": "recorded", "source_refs": ["challenges/web-01/STATUS.md"], "confidence": "high", "review_state": "accepted"},
+    "parent_task": "Challenge web-01",
+    "context": "Synthetic challenge instructions and status are available.",
+    "completed_work": ["Challenge-local plan was handed to the worker."],
+    "evidence_refs": [
+      { "path": "challenges/web-01/STATUS.md", "description": "Challenge status" },
+      { "path": "challenges/web-01/planning.md", "description": "Challenge plan" }
+    ],
+    "open_questions": [],
+    "requested_decision": "",
+    "recommended_next_action": "Review the challenge handoff before continuing.",
+    "created_at": "2026-09-04T12:01:00Z",
+    "status": "accepted"
+  },
+  {
+    "schema_version": "1",
+    "handoff_id": "bb-sub-002",
+    "engagement": "synthetic-bugbounty",
+    "branch": "synthetic-bugbounty/api-session",
+    "from_role": "bb-mastermind",
+    "to_role": "bb-vigilante-shit",
+    "parent_handoff_id": "bb-main-001",
+    "provenance": {"kind": "derived", "source_refs": ["bb-main-001", "harness/queue.md"], "confidence": "medium", "review_state": "candidate"},
+    "coverage_cell": "api / session-management",
+    "context": "The summary exists, but the worker evidence reference is missing.",
+    "completed_work": [],
+    "evidence_refs": [],
+    "open_questions": ["Which worker record contains the completed evidence?"],
+    "requested_decision": "Return for the missing evidence reference.",
+    "recommended_next_action": "Keep this handoff visible until the missing reference is supplied.",
+    "created_at": "2026-09-04T12:02:00Z",
+    "status": "incomplete"
+  },
+  {
+    "schema_version": "1",
+    "handoff_id": "bb-worker-003",
+    "engagement": "synthetic-bugbounty",
+    "branch": "synthetic-bugbounty/api-session",
+    "from_role": "bb-vigilante-shit",
+    "to_role": "bb-mastermind",
+    "parent_handoff_id": "bb-sub-002",
+    "provenance": {"kind": "recorded", "source_refs": ["logs/activity.log"], "confidence": "medium", "review_state": "needs-review"},
+    "coverage_cell": "api / session-management",
+    "context": "The worker context has not been refreshed within the review window.",
+    "completed_work": ["No new claim was made."],
+    "evidence_refs": [
+      { "path": "logs/activity.log", "description": "Last known worker activity" }
+    ],
+    "open_questions": ["Should the operator request a fresh worker handoff?"],
+    "requested_decision": "Decide whether this stale context can be resumed.",
+    "recommended_next_action": "Inspect the last known activity before deciding.",
+    "created_at": "2026-08-28T12:00:00Z",
+    "status": "stale"
+  },
+  {
+    "schema_version": "1",
+    "handoff_id": "bb-rejected-004",
+    "engagement": "synthetic-bugbounty",
+    "branch": "synthetic-bugbounty/api-session",
+    "from_role": "bb-mastermind",
+    "to_role": "bb-vigilante-shit",
+    "provenance": {"kind": "recorded", "source_refs": ["harness/queue.md"], "confidence": "high", "review_state": "rejected"},
+    "parent_task": "Unselected API follow-up",
+    "context": "A proposed follow-up was reviewed and declined by the operator.",
+    "completed_work": ["The proposal was recorded without running it."],
+    "evidence_refs": [
+      { "path": "harness/queue.md", "description": "Queue proposal" }
+    ],
+    "open_questions": [],
+    "requested_decision": "",
+    "recommended_next_action": "Retain the rejection and do not continue this proposal.",
+    "created_at": "2026-09-04T12:04:00Z",
+    "status": "rejected"
+  },
+  {
+    "schema_version": "1",
+    "handoff_id": "bb-resumed-005",
+    "engagement": "synthetic-bugbounty",
+    "branch": "synthetic-bugbounty/api-session",
+    "from_role": "bb-mastermind",
+    "to_role": "bb-vigilante-shit",
+    "parent_handoff_id": "bb-worker-003",
+    "provenance": {"kind": "derived", "source_refs": ["bb-worker-003", "logs/activity.log"], "confidence": "medium", "review_state": "accepted"},
+    "coverage_cell": "api / session-management",
+    "context": "The operator approved continuation after the stale handoff was reviewed.",
+    "completed_work": ["The stale record was reviewed by the operator."],
+    "evidence_refs": [
+      { "path": "logs/activity.log", "description": "Review decision audit" },
+      { "path": "harness/queue.md", "description": "Existing selected cell" }
+    ],
+    "open_questions": ["Is the selected cell still in scope?"],
+    "requested_decision": "Confirm the current scope before any worker action.",
+    "recommended_next_action": "Re-read the authoritative scope and queue records.",
+    "created_at": "2026-09-04T12:05:00Z",
+    "status": "resumed"
+  },
+  {
+    "schema_version": "1",
+    "handoff_id": "ctf-interrupted-006",
+    "engagement": "synthetic-ctf",
+    "branch": "synthetic-ctf/challenge-web-01",
+    "from_role": "ctf-vigilante-shit",
+    "to_role": "ctf-mastermind",
+    "provenance": {"kind": "recorded", "source_refs": ["challenges/web-01/activity.log"], "confidence": "high", "review_state": "needs-review"},
+    "parent_task": "Challenge web-01",
+    "context": "The worker stopped before completing the challenge investigation.",
+    "completed_work": ["Initial notes were preserved."],
+    "evidence_refs": [
+      { "path": "challenges/web-01/activity.log", "description": "Challenge-local audit" }
+    ],
+    "open_questions": ["What remains to be verified?"],
+    "requested_decision": "Decide whether to return or resume this handoff.",
+    "recommended_next_action": "Review the preserved notes before choosing a continuation.",
+    "created_at": "2026-09-04T12:06:00Z",
+    "status": "interrupted"
+  }
+]

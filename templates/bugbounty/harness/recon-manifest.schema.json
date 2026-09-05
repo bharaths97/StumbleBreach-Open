@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Optional StumbleBreach bug-bounty recon manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "producer_schema_version",
+    "producer",
+    "engagement_type",
+    "generated_at",
+    "assets",
+    "ranked_surfaces",
+    "secret_references",
+    "suggested_vulnerability_classes"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "producer_schema_version": { "type": "string", "minLength": 1 },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "schema_version"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "schema_version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "engagement_type": { "const": "bug-bounty" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "target", "ownership", "live_status", "surface_rationale", "selected_for_testing"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "target": { "type": "string", "minLength": 1 },
+          "surface_rationale": { "type": "string", "minLength": 1 },
+          "selected_for_testing": { "type": "boolean" },
+          "ownership": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["confidence", "anchors"],
+            "properties": {
+              "confidence": { "enum": ["confirmed", "probable", "unverified", "unknown", "unowned", "quarantined", "high", "medium", "low"] },
+              "anchors": { "type": "array", "items": { "type": "object", "required": ["reference"] } }
+            }
+          },
+          "live_status": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["soft_404"],
+            "properties": {
+              "http_status": { "type": "integer" },
+              "technology": { "type": "array", "items": { "type": "string" } },
+              "soft_404": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "ranked_surfaces": { "type": "array", "items": { "type": "object", "required": ["surface", "rationale"] } },
+    "secret_references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "reference", "redaction_ref", "redacted"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "reference": { "type": "string", "minLength": 1 },
+          "redaction_ref": { "type": "string", "minLength": 1 },
+          "location": { "type": "string" },
+          "kind": { "type": "string" },
+          "redacted": { "const": true }
+        }
+      }
+    },
+    "suggested_vulnerability_classes": { "type": "array", "items": { "type": "string" } }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "StumbleBreach Engagement Journey",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "engagement", "nodes", "events", "edges", "gaps", "review_queue"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "engagement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "branch"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "type": {"enum": ["bug-bounty", "ctf"]},
+        "branch": {"type": "string", "minLength": 1}
+      }
+    },
+    "nodes": {"type": "array", "items": {"$ref": "#/$defs/node"}},
+    "events": {"type": "array", "items": {"$ref": "#/$defs/event"}},
+    "edges": {"type": "array", "items": {"$ref": "#/$defs/edge"}},
+    "gaps": {"type": "array", "items": {"$ref": "#/$defs/gap"}},
+    "review_queue": {"type": "array", "items": {"$ref": "#/$defs/review"}}
+  },
+  "$defs": {
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "source_refs", "confidence", "review_state"],
+      "properties": {
+        "kind": {"enum": ["recorded", "derived", "unresolved"]},
+        "source_refs": {"type": "array", "items": {"type": "string"}},
+        "confidence": {"enum": ["high", "medium", "low"]},
+        "review_state": {"enum": ["accepted", "candidate", "needs-review", "rejected"]}
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "label", "state", "provenance"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["scope", "target", "coverage", "queue", "hypothesis", "test", "receipt", "evidence", "finding", "challenge", "handoff", "decision", "activity"]},
+        "label": {"type": "string", "minLength": 1},
+        "state": {"enum": ["pending", "complete", "active", "blocked", "skipped", "unknown", "legacy"]},
+        "provenance": {"$ref": "#/$defs/provenance"}
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "timestamp", "summary", "node_ids", "provenance"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "timestamp": {"type": "string", "minLength": 1},
+        "actor": {"type": "string"},
+        "role": {"type": "string"},
+        "summary": {"type": "string", "minLength": 1},
+        "node_ids": {"type": "array", "items": {"type": "string"}},
+        "provenance": {"$ref": "#/$defs/provenance"}
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "from", "to", "type", "provenance"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "from": {"type": "string", "minLength": 1},
+        "to": {"type": "string", "minLength": 1},
+        "type": {"enum": ["pivot", "follow-up", "derived-from", "evidence-for", "duplicate-of", "blocked-by", "supersedes"]},
+        "provenance": {"$ref": "#/$defs/provenance"}
+      }
+    },
+    "gap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "state", "detail", "provenance"],
+      "properties": {
+        "source": {"type": "string", "minLength": 1},
+        "state": {"enum": ["missing", "malformed", "unsupported"]},
+        "detail": {"type": "string", "minLength": 1},
+        "provenance": {"$ref": "#/$defs/provenance"}
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "reason", "source_refs", "candidate", "provenance"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1},
+        "source_refs": {"type": "array", "items": {"type": "string"}},
+        "candidate": {"type": "string", "minLength": 1},
+        "provenance": {"$ref": "#/$defs/provenance"}
+      }
+    }
+  }
+}

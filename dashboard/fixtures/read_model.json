@@ -1,0 +1,49 @@
+{
+  "engagements": [
+    {
+      "name": "Synthetic API",
+      "type": "bugbounty",
+      "branch": "synthetic-bugbounty",
+      "status": "Active",
+      "created": "2026-09-04",
+      "description": "Synthetic bug-bounty fixture"
+    },
+    {
+      "name": "Synthetic CTF",
+      "type": "ctf",
+      "branch": "synthetic-ctf",
+      "status": "Paused",
+      "created": "2026-09-04",
+      "description": "Synthetic CTF fixture"
+    },
+    {
+      "name": "Unknown Record",
+      "type": "future-kind",
+      "branch": "synthetic-unknown",
+      "status": "Unknown",
+      "created": "2026-09-04",
+      "description": "Unknown data remains visible"
+    }
+  ],
+  "branch_objects": {
+    "synthetic-bugbounty": {
+      "findings/plan.md": "| Item | Status |\n|---|---|\n| auth | done |\n| sessions | unknown |\n",
+      "scope.md": "- Product: Synthetic API\n",
+      "logs/activity.log": "2026-09-04T12:00:00Z [fixture/worker] review\n",
+      "harness/coverage.json": "{\"areas\": {\"api\": {}}}",
+      "harness/queue.md": "# Queue\n",
+      "logs/tool-receipts.jsonl": "{\"receipt_id\":\"r-1\",\"status\":\"failed\",\"action\":\"probe token=hidden\",\"exit_code\":2}\n",
+      "tree": {"findings/": ["findings/auth.md"]}
+    },
+    "synthetic-ctf": {
+      "STATUS.md": "## Challenges\n- web-01: stale (1 / ?)\n",
+      "tree": {"challenges/": ["challenges/web-01"]}
+    },
+    "synthetic-unknown": {}
+  },
+  "handoffs": [
+    {"handoff_id": "h-stale", "status": "stale", "branch": "synthetic-bugbounty"},
+    {"handoff_id": "h-pending", "status": "pending", "branch": "synthetic-ctf"}
+  ],
+  "health": {"stdio_servers": []}
+}

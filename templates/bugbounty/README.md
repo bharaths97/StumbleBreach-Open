@@ -81,3 +81,7 @@ intentionally strict — loosening it means editing the `bb-mastermind`/
 `bb-vigilante-shit` skills in the StumbleBreach project root's `.claude/skills/`,
 not this repo, since that's where the guardrail text actually lives.
 See `RULES.md` rule 2.
+## Handoffs
+
+Store one validated, human-reviewed record per file at
+`handoffs/<handoff_id>.json`; see `handoffs/README.md`.

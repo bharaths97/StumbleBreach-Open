@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "name": "StumbleBreach Dashboard",
+  "port": 4400,
+  "health_check": {
+    "method": "GET",
+    "path": "/api/health",
+    "expect_status": 200
+  },
+  "controllable": true,
+  "start_command": "python3 lifecycle.py start",
+  "stop_command": "python3 lifecycle.py stop"
+}

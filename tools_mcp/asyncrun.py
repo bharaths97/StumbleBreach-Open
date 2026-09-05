@@ -32,6 +32,17 @@ from pathlib import Path
 from typing import NamedTuple
 
 SCRATCH_ROOT = "tools-env/scratch"
+_EXIT_CODES: dict[int, int] = {}
+
+
+def _receipt(*args, **kwargs) -> None:
+    """Best-effort receipt hook; telemetry must not change tool execution."""
+    try:
+        from tools_mcp.hub_guard.enforce import _write_receipt
+
+        _write_receipt(*args, **kwargs)
+    except (OSError, ValueError):
+        pass
 
 
 def _scratch_dir(handle: str) -> Path:
@@ -67,6 +78,7 @@ def launch(tool: str, argv: list[str], timeout_seconds: int, cwd: str | Path | N
             }
         )
     )
+    _receipt(f"asyncrun.launch(tool={tool!r})", status="started", server_tool=tool)
     return handle
 
 
@@ -89,10 +101,32 @@ def fetch(handle: str) -> FetchResult:
     alive = _pid_alive(pid)
     if alive and time.time() > meta["deadline"]:
         _kill(pid)
+        _receipt(
+            f"asyncrun.fetch(tool={meta['tool']!r}, handle={handle!r})",
+            status="timed_out",
+            timed_out=True,
+            error="execution exceeded deadline",
+            output_artifact=stdout_path,
+            server_tool=meta["tool"],
+        )
         return FetchResult(status="timed_out", output=output)
     if alive:
+        _receipt(
+            f"asyncrun.fetch(tool={meta['tool']!r}, handle={handle!r})",
+            status="running",
+            server_tool=meta["tool"],
+        )
         return FetchResult(status="running", output=output)
-    return FetchResult(status="done", output=output)
+    exit_code = _EXIT_CODES.get(pid)
+    status = "failed" if exit_code not in (None, 0) else "done"
+    _receipt(
+        f"asyncrun.fetch(tool={meta['tool']!r}, handle={handle!r})",
+        status=status,
+        exit_code=exit_code,
+        output_artifact=stdout_path,
+        server_tool=meta["tool"],
+    )
+    return FetchResult(status=status, output=output)
 
 
 def _pid_alive(pid: int) -> bool:
@@ -108,7 +142,9 @@ def _pid_alive(pid: int) -> bool:
     process's child (e.g. a `fetch` call from a different process).
     """
     try:
-        reaped_pid, _status = os.waitpid(pid, os.WNOHANG)
+        reaped_pid, wait_status = os.waitpid(pid, os.WNOHANG)
+        if reaped_pid == pid:
+            _EXIT_CODES[pid] = os.waitstatus_to_exitcode(wait_status)
         return reaped_pid != pid
     except ChildProcessError:
         pass

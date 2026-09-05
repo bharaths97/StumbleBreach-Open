@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Read-only StumbleBreach engagement dashboard">
+  <title>StumbleBreach dashboard</title>
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div id="category-backdrop" class="category-backdrop" aria-hidden="true"></div>
+<div id="app-layout" class="container shell category-nav-open">
+    <aside id="category-panel" class="category-panel" aria-label="Dashboard navigation">
+<button id="category-toggle" class="category-toggle secondary" type="button"
+aria-controls="category-nav" aria-expanded="true" aria-label="Close dashboard navigation">×</button>
+      <nav id="category-nav" class="category-nav" aria-label="Engagement filters">
+        <a class="menu-color-dashboard" data-filter="all" href="#filter=all">All engagements</a>
+        <a class="menu-color-pushed" data-filter="active" href="#filter=active">Active</a>
+        <a class="menu-color-compile" data-filter="paused" href="#filter=paused">Paused</a>
+        <a class="menu-color-audit" data-filter="closed" href="#filter=closed">Closed</a>
+        <a class="menu-color-control" href="#system-health">System health</a>
+        <a class="menu-color-activity" href="#settings">Settings</a>
+      <div class="drawer-footer">
+          <label id="theme-switch" class="theme-switcher" aria-label="Switch between Normie and Hacker themes">
+            <span class="theme-option normie">Normie</span>
+          <span class="theme-toggle">
+            <input id="theme-switch-input" type="checkbox">
+            <span class="theme-slider" aria-hidden="true"></span>
+          </span>
+            <span class="theme-option hacker">Hacker</span>
+        </label>
+        <a id="pavilion-link" class="pavilion-link" href="/" data-route-prefix-skip>Back to Pavilion</a>
+        <small class="muted">Local read model · no actions</small>
+      </div>
+      </nav>
+    </aside>
+
+    <header class="nav topbar">
+      <a class="brand" href="#filter=all"><span class="brand-mark" aria-hidden="true">&gt;_</span><span>StumbleBreach</span></a>
+      <span id="engagement-tabs" class="nav-job-tabs" aria-label="Opened engagements"></span>
+      <span class="scope-badge">READ ONLY</span>
+    </header>
+
+    <main id="dashboard" class="dashboard" aria-live="polite">
+      <p id="loading" class="loading">Loading read-only dashboard data…</p>
+    </main>
+  </div>
+
+  <script src="route-prefix.js" data-proxy-path="/stumblebreach"></script>
+  <script src="sidebar-drawer.js" defer></script>
+  <script src="data-table.js" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>

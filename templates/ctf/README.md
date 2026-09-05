@@ -57,3 +57,7 @@ from the `ctf-mastermind`/`ctf-lavender-haze`/`ctf-vigilante-shit` Claude Code s
 `StumbleBreach` project root's `.claude/skills/` (not tracked in this
 repo, and not global — only discoverable while working inside that
 project).
+## Handoffs
+
+Store one validated, human-reviewed record per file at
+`handoffs/<handoff_id>.json`; see `handoffs/README.md`.

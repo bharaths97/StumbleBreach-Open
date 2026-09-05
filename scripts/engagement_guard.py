@@ -18,8 +18,9 @@ ENGAGEMENT_PATHS = (
 )
 ARCHITECTURE_EXAMPLES = (
     "dashboard/", "docs/", "plans/", "templates/", "tools_mcp/",
-    "harness/", "scripts/",
+    "harness/", "scripts/", "config/upstream-sources.json",
 )
+FRAMEWORK_EXACT_FILES = frozenset({"config/upstream-sources.json"})
 FRAMEWORK_PATHS = ("roles/", "templates/", "scripts/")
 HUB_WORK_BRANCH_RE = re.compile(r"^(?:feat|patch)-[a-z0-9]+(?:-[a-z0-9]+){1,2}$")
 SECRET_SUFFIXES = (".env", ".pem", ".key", ".p12")
@@ -50,6 +51,8 @@ def is_hub_work_branch(name: str) -> bool:
 
 def is_engagement_path(path: str) -> bool:
     normalized = PurePosixPath(path).as_posix()
+    if normalized in FRAMEWORK_EXACT_FILES:
+        return False
     return any(
         normalized == protected.rstrip("/") or normalized.startswith(protected)
         for protected in ENGAGEMENT_PATHS

@@ -17,6 +17,7 @@ from unified_agent.tools import ToolRegistry
 from tools_mcp import asyncrun
 from tools_mcp.hub_guard.enforce import (
     log_activity,
+    ToolOutput,
     record_tool_run,
     require_in_scope,
     require_installed,
@@ -38,8 +39,13 @@ _DEFAULT_DIR_WORDLIST = "tools-env/seclists/Discovery/Web-Content/common.txt"
 
 
 def _run_sync(binary: str, args: list[str], timeout: int = 60) -> str:
-    result = subprocess.run([binary, *args], capture_output=True, text=True, timeout=timeout)
-    return result.stdout + result.stderr
+    try:
+        result = subprocess.run([binary, *args], capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired as exc:
+        output = (exc.stdout or "") + (exc.stderr or "")
+        return ToolOutput(output, status="timed_out", timed_out=True)
+    output = result.stdout + result.stderr
+    return ToolOutput(output, status="failed" if result.returncode else "success", exit_code=result.returncode)
 
 
 @REGISTRY.tool()

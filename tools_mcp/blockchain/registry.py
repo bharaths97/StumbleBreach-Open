@@ -16,6 +16,7 @@ from tools_mcp import asyncrun
 from tools_mcp.hub_guard.enforce import (
     ScopeError,
     log_activity,
+    record_tool_failure,
     record_tool_run,
     require_blockchain_scope,
     require_installed,
@@ -52,9 +53,18 @@ def _launch(
     repo: str,
     attack_class: str,
 ) -> str:
-    require_installed(binary)
-    require_blockchain_scope(repo=repo, attack_class=attack_class)
-    directory = _repo_directory(repo)
+    try:
+        require_installed(binary)
+        require_blockchain_scope(repo=repo, attack_class=attack_class)
+        directory = _repo_directory(repo)
+    except ScopeError as exc:
+        record_tool_failure(
+            f"blockchain.launch_{tool}(repo={repo!r}, attack_class={attack_class!r})",
+            str(exc),
+            scope_decision="rejected",
+            status="rejected",
+        )
+        raise
     handle = asyncrun.launch(tool, argv, _TIMEOUTS[tool], cwd=directory)
     log_activity(
         f"blockchain.launch_{tool}(repo={repo!r}, attack_class={attack_class}) -> handle={handle}"

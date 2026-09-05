@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "producer_schema_version": "recon-tool/1.0",
+  "producer": { "name": "manual-recon", "schema_version": "1.0" },
+  "engagement_type": "bug-bounty",
+  "generated_at": "2026-09-04T12:00:00Z",
+  "assets": [
+    {
+      "id": "api-example",
+      "target": "api.example.test",
+      "ownership": {
+        "confidence": "confirmed",
+        "anchors": [{ "type": "scope", "reference": "scope.md#in-scope-api" }]
+      },
+      "live_status": { "http_status": 200, "technology": ["https"], "soft_404": false },
+      "surface_rationale": "Named API host in the program scope; rank for authenticated API review.",
+      "selected_for_testing": false
+    }
+  ],
+  "ranked_surfaces": [
+    { "surface": "authenticated API", "rank": 1, "rationale": "Scope anchor and live response agree." }
+  ],
+  "secret_references": [],
+  "suggested_vulnerability_classes": ["authn/authz", "IDOR"]
+}

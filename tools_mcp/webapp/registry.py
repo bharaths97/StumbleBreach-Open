@@ -27,6 +27,7 @@ from tools_mcp.hub_guard.enforce import (
     require_in_scope,
     require_installed,
     staleness_warning,
+    ToolOutput,
 )
 
 REGISTRY = ToolRegistry(server_name="webapp")
@@ -49,10 +50,15 @@ _DEFAULT_FUZZ_WORDLIST = "tools-env/seclists/Discovery/Web-Content/common.txt"
 def _run_sync(binary: str, args: list[str], timeout: int) -> str:
     try:
         result = subprocess.run([binary, *args], capture_output=True, text=True, timeout=timeout)
-        return result.stdout + result.stderr
+        output = result.stdout + result.stderr
+        return ToolOutput(output, status="failed" if result.returncode else "success", exit_code=result.returncode)
     except subprocess.TimeoutExpired as e:
         partial = (e.stdout or "") + (e.stderr or "")
-        return f"{partial}\n\n[timed out after {timeout}s]"
+        return ToolOutput(
+            f"{partial}\n\n[timed out after {timeout}s]",
+            status="timed_out",
+            timed_out=True,
+        )
 
 
 def _launch(tool: str, binary: str, argv: list[str], target: str, log_args: str) -> str:

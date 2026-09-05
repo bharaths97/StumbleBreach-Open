@@ -10,10 +10,12 @@ notes on the hub_guard server spec and `require_installed`.
 from __future__ import annotations
 
 import datetime
+import hashlib
 import json
 import os
 import re
 import shutil
+import uuid
 from pathlib import Path
 
 
@@ -133,7 +135,9 @@ def require_installed(binary: str) -> None:
     """
     if shutil.which(binary) is None:
         hint = INSTALL_COMMANDS.get(binary, "(no known install command -- check tools_mcp/MANIFEST.md)")
-        raise ToolNotInstalledError(f"{binary!r} is not installed. Install it with:\n  {hint}\nThen re-run this.")
+        error = f"{binary!r} is not installed. Install it with:\n  {hint}\nThen re-run this."
+        record_tool_failure(f"require_installed(binary={binary!r})", error, install_preflight="failed")
+        raise ToolNotInstalledError(error)
 
 
 def _target_env_values() -> tuple[Path, dict[str, str]]:
@@ -187,7 +191,9 @@ def require_in_scope(target: str) -> None:
     """
     in_scope = _in_scope_targets()
     if target not in in_scope:
-        raise ScopeError(f"{target!r} is not in IN_SCOPE_TARGETS — refusing")
+        error = f"{target!r} is not in IN_SCOPE_TARGETS — refusing"
+        record_tool_failure(f"require_in_scope(target={target!r})", error, scope_decision="rejected")
+        raise ScopeError(error)
 
 
 def require_authorized_bruteforce(
@@ -202,12 +208,14 @@ def require_authorized_bruteforce(
     """
     require_in_scope(target)
     if not i_have_confirmed_this_is_authorized:
-        raise ScopeError(
+        error = (
             f"brute-force against {target!r} needs explicit human authorization "
             "beyond the normal scope check — re-call with "
             "i_have_confirmed_this_is_authorized=True only after the user has "
             "actually confirmed this specific action is allowed"
         )
+        record_tool_failure("require_authorized_bruteforce", error, scope_decision="rejected")
+        raise ScopeError(error)
 
 
 def _truthy(values: dict[str, str], name: str) -> bool:
@@ -303,8 +311,8 @@ def require_blockchain_scope(
 
 
 def _actor_role() -> tuple[str, str]:
-    actor = os.environ.get("MCP_ACTOR", "unknown")
-    role = os.environ.get("MCP_ROLE", "worker")
+    actor = _sanitize_actor_role(os.environ.get("MCP_ACTOR", "unknown"), "unknown")
+    role = _sanitize_actor_role(os.environ.get("MCP_ROLE", "worker"), "worker")
     return actor, role
 
 
@@ -315,13 +323,161 @@ def log_activity(action: str) -> None:
     log_path = Path.cwd() / "logs" / "activity.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
     with log_path.open("a") as f:
-        f.write(f"{timestamp} [{actor}/{role}] {action}\n")
+        f.write(f"{timestamp} [{actor}/{role}] {_sanitize(action)}\n")
 
 
 _SAFE_NAME_RE = re.compile(r"[^a-zA-Z0-9_.-]")
+_RECEIPTS_PATH = "logs/tool-receipts.jsonl"
+_SECRET_RE = re.compile(
+    r"(?i)(?P<name>authorization|cookie|password|passwd|secret|token|api[_-]?key|session)"
+    r"(?P<separator>\s*[:=]\s*)"
+    r"(?P<bearer>Bearer\s+)?"
+    r"(?P<value>[^\s,;}&)\]&#?!]+)"
+)
+_AUTH_BEARER_RE = re.compile(
+    r"(?i)(?P<name>\bauthorization\b)(?P<separator>\s+)"
+    r"(?P<scheme>Bearer)(?P<value_separator>\s+)"
+    r"(?P<value>[^\s,;}&)\]&#?!]+)"
+)
 
 
-def record_tool_run(action: str, output: str, max_inline_chars: int = 4000) -> str:
+class ToolOutput(str):
+    """String-compatible output carrying subprocess outcome metadata."""
+
+    def __new__(cls, value: str, *, status: str = "success", exit_code: int | None = 0, timed_out: bool = False):
+        result = super().__new__(cls, value)
+        result.receipt_status = status
+        result.receipt_exit_code = exit_code
+        result.receipt_timed_out = timed_out
+        return result
+
+
+def _receipt_context() -> dict[str, str]:
+    actor, role = _actor_role()
+    env = os.environ
+    context = {
+        "actor": actor,
+        "role": role,
+        "engagement": env.get("MCP_ENGAGEMENT", env.get("ENGAGEMENT", "unknown")),
+        "branch": env.get("MCP_BRANCH", env.get("GIT_BRANCH", "unknown")),
+        "queue_cell": env.get("MCP_QUEUE_CELL", env.get("QUEUE_CELL", "unknown")),
+    }
+    return {key: _sanitize(item) for key, item in context.items()}
+
+
+def _sanitize(value: object) -> str:
+    text = _AUTH_BEARER_RE.sub(
+        lambda match: (
+            f"{match.group('name')}{match.group('separator')}"
+            f"{match.group('scheme')}{match.group('value_separator')}<redacted>"
+        ),
+        str(value),
+    )
+    return _SECRET_RE.sub(
+        lambda match: (
+            f"{match.group('name')}{match.group('separator')}"
+            f"{match.group('bearer') or ''}<redacted>"
+        ),
+        text,
+    )
+
+
+_ACTOR_ROLE_SECRET_RE = re.compile(
+    r"(?i)\b(?:authorization|bearer|cookie|password|passwd|secret|session|token|api[_-]?key)\b"
+)
+
+
+def _sanitize_actor_role(value: object, fallback: str) -> str:
+    raw = str(value).strip()
+    if not raw:
+        return fallback
+    sanitized = _sanitize(raw)
+    if sanitized == raw and _ACTOR_ROLE_SECRET_RE.search(raw):
+        return "<redacted>"
+    return sanitized
+
+
+def _receipt_path() -> Path:
+    path = Path.cwd() / _RECEIPTS_PATH
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _write_receipt(
+    action: str,
+    *,
+    status: str,
+    output_artifact: Path | None = None,
+    exit_code: int | None = None,
+    timed_out: bool = False,
+    error: str | None = None,
+    scope_decision: str = "allowed",
+    install_preflight: str = "passed",
+    execution_kind: str = "native_mcp",
+    server_tool: str | None = None,
+    start_time: str | None = None,
+    end_time: str | None = None,
+) -> None:
+    artifact: dict[str, str] | None = None
+    if output_artifact is not None and output_artifact.exists():
+        digest = hashlib.sha256(output_artifact.read_bytes()).hexdigest()
+        artifact = {"path": _sanitize(str(output_artifact)), "sha256": digest}
+    now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    receipt = {
+        "receipt_id": str(uuid.uuid4()),
+        **_receipt_context(),
+        "execution_kind": execution_kind,
+        "server_tool_or_binary": _sanitize(server_tool or action),
+        "scope_decision": scope_decision,
+        "sanitized_arguments": _sanitize(action),
+        "started_at": start_time or now,
+        "ended_at": end_time or now,
+        "status": status,
+        "exit_code": exit_code,
+        "timed_out": timed_out,
+        "error": _sanitize(error) if error else None,
+        "output_artifact": artifact,
+        "authorization": {"install_preflight": install_preflight},
+    }
+    with _receipt_path().open("a", encoding="utf-8") as stream:
+        stream.write(json.dumps(receipt, sort_keys=True) + "\n")
+
+
+def record_tool_failure(
+    action: str,
+    error: str,
+    *,
+    scope_decision: str = "allowed",
+    install_preflight: str = "passed",
+    status: str = "failed",
+    exit_code: int | None = None,
+    timed_out: bool = False,
+) -> None:
+    """Record a failed or rejected attempt without persisting its raw error as output."""
+    log_activity(f"{action} -> {status}: {_sanitize(error)}")
+    _write_receipt(
+        action,
+        status=status,
+        scope_decision=scope_decision,
+        install_preflight=install_preflight,
+        exit_code=exit_code,
+        timed_out=timed_out,
+        error=error,
+    )
+
+
+def record_tool_run(
+    action: str,
+    output: str,
+    max_inline_chars: int = 4000,
+    *,
+    status: str = "success",
+    exit_code: int | None = 0,
+    timed_out: bool = False,
+    error: str | None = None,
+    execution_kind: str = "native_mcp",
+    server_tool: str | None = None,
+) -> str:
     """Log `action`, persist raw `output` under logs/, return an inline copy.
 
     Logs one activity.log line (success or failure — callers should include
@@ -330,13 +486,26 @@ def record_tool_run(action: str, output: str, max_inline_chars: int = 4000) -> s
     truncation. Returns the text a tool function should actually return to
     the model — truncated with a pointer to the full file if it's large.
     """
+    status = getattr(output, "receipt_status", status)
+    exit_code = getattr(output, "receipt_exit_code", exit_code)
+    timed_out = getattr(output, "receipt_timed_out", timed_out)
     log_activity(action)
     log_dir = Path.cwd() / "logs" / "agent-scan-logs"
     log_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    safe_action = _SAFE_NAME_RE.sub("_", action)[:80]
+    safe_action = _SAFE_NAME_RE.sub("_", _sanitize(action))[:80]
     out_path = log_dir / f"{timestamp}-{safe_action}.log"
     out_path.write_text(output)
+    _write_receipt(
+        action,
+        status=status,
+        output_artifact=out_path,
+        exit_code=exit_code,
+        timed_out=timed_out,
+        error=error,
+        execution_kind=execution_kind,
+        server_tool=server_tool,
+    )
     if len(output) <= max_inline_chars:
         return output
     return (

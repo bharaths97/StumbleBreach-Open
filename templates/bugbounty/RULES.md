@@ -203,3 +203,9 @@ user before doing anything else.
     The report must read as if written by a solo researcher submitting
     to a vendor bug bounty portal. No project scaffolding visible.
     Reference evidence as "see attached" not by internal repo path.
+# Handoff records
+
+Production handoffs live at `handoffs/<handoff_id>.json`, one JSON object per
+file. Validate them from the engagement root with
+`python3 scripts/validate_handoff.py handoffs/`; append the matching handoff
+audit line to `logs/activity.log`.

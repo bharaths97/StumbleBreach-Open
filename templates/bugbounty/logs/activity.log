@@ -1,4 +1,6 @@
 # Activity log — <ISO8601 timestamp> [<actor>/<role>] <action>
-# actor: user | claude | codex   role: overseer | worker
+# actor: user | claude | codex   role: free-form (for example overseer, worker, sub-master, Karma)
 # See RULES.md rule 5. Append one line per tool run, analysis step, or
 # user-confirmed action, whether the session did it or the user did.
+# Handoff actions additionally use: handoff=<id> parent=<id|none>
+# action=<created|updated|reviewed|returned>

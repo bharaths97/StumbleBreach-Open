@@ -161,3 +161,9 @@ this.
     submission-ready. The verifier is read-only by default and reports
     back to the overseer; it does not submit, run worker tools, or
     replace final overseer judgment.
+# Handoff records
+
+Production handoffs live at `handoffs/<handoff_id>.json`, one JSON object per
+file. Validate them from the engagement root with
+`python3 scripts/validate_handoff.py handoffs/`; append the matching handoff
+audit line to the relevant challenge activity log.

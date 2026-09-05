@@ -13,6 +13,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -28,6 +29,19 @@ FRAMEWORK_ROOT_FILES = (
 )
 STALE_FRAMEWORK_PREFIXES = ("templates/bugbounty/harness/scripts/",)
 RUNTIME_SKILL_LINKS = (".claude/skills", ".agents/skills")
+COMPATIBILITY_RECORD = "docs/integration/backpatch-compatibility.json"
+COMPATIBILITY_FIELDS = (
+    "framework_paths",
+    "schema_changes",
+    "role_discovery_changes",
+    "configuration_dependency_changes",
+    "generated_machine_local_state",
+    "public_export_impact",
+    "bug_bounty_impact",
+    "ctf_impact",
+    "expected_behavior",
+    "risks",
+)
 AUTO_RESOLVE_PREFIXES = (
     ".githooks/",
     "dashboard/",
@@ -136,6 +150,45 @@ def compatibility_report(root: Path, branch: str, main_ref: str = "main") -> dic
         "changed": changed,
         "stale": stale,
     }
+
+
+def compatibility_record_errors(
+    root: Path, relative_path: str = COMPATIBILITY_RECORD, ref: str | None = None
+) -> list[str]:
+    """Validate the required track record without changing the worktree."""
+    try:
+        raw = (
+            git(root, "show", f"{ref}:{relative_path}")
+            if ref
+            else (root / relative_path).read_text(encoding="utf-8")
+        )
+    except (OSError, subprocess.CalledProcessError) as error:
+        if isinstance(error, subprocess.CalledProcessError):
+            return [f"missing compatibility record: {relative_path}"]
+        return [f"missing compatibility record: {relative_path}"]
+    try:
+        record = json.loads(raw)
+    except json.JSONDecodeError as error:
+        return [f"invalid compatibility record {relative_path}: {error}"]
+    if not isinstance(record, dict):
+        return [f"invalid compatibility record {relative_path}: expected object"]
+
+    errors = [f"compatibility record missing field: {field}" for field in COMPATIBILITY_FIELDS if field not in record]
+    behavior = record.get("expected_behavior")
+    if not isinstance(behavior, dict):
+        errors.append("compatibility record expected_behavior must be an object")
+    else:
+        for version in ("old", "current", "beta"):
+            if not behavior.get(version):
+                errors.append(f"compatibility record missing expected_behavior.{version}")
+    risks = record.get("risks")
+    if not isinstance(risks, list) or not risks:
+        errors.append("compatibility record risks must be a non-empty list")
+    else:
+        for index, risk in enumerate(risks):
+            if not isinstance(risk, dict) or not risk.get("mitigation") or not risk.get("decision"):
+                errors.append(f"compatibility record risk {index} needs mitigation and decision")
+    return errors
 
 
 def report_has_drift(report: dict[str, object]) -> bool:
@@ -326,6 +379,12 @@ def main(argv: list[str] | None = None) -> int:
     if status is None:
         print(f"warning: {args.branch} is not registered in main:ENGAGEMENTS.md", file=sys.stderr)
 
+    record_errors = compatibility_record_errors(root, ref=args.branch)
+    if record_errors:
+        print("error: backpatch compatibility record is incomplete", file=sys.stderr)
+        for error in record_errors:
+            print(f" - {error}", file=sys.stderr)
+        return 1
     report = compatibility_report(root, args.branch)
     runtime_warnings = local_runtime_warnings(root) if current_branch(root) == args.branch else []
     print_report(report, runtime_warnings=runtime_warnings)
